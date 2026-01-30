@@ -132,7 +132,67 @@ with tabs[0]:
         df = pd.DataFrame({'Date': ['01/01', '08/01', '15/01'], 'Poids': [75, 74.5, 74.2]})
         fig = px.line(df, x='Date', y='Poids', color_discrete_sequence=['#dc2626'])
         st.plotly_chart(fig, use_container_width=True)
+with tabs[3]: # Onglet Entraînement
+    st.markdown("<h2 class='text-5xl'>💪 GUIDE TECHNIQUE PRO</h2>", unsafe_allow_html=True)
+    
+    # Sélecteur stylé
+    choix_guide = st.selectbox("Choisir un exercice pour voir la technique :", 
+                              ["Développé couché", "Développé incliné", "Rowing Barre", "Squat", 
+                               "Soulevé de terre", "Romanian Deadlift", "Élévations latérales", "Curl Biceps", "Développé Militaire"])
 
+    st.markdown('<div class="card-dark">', unsafe_allow_html=True)
+    
+    if choix_guide == "Développé couché":
+        col1, col2 = st.columns([1, 1])
+        with col1:
+            st.markdown("#### 🎯 Focus : Pectoraux, Triceps, Épaules")
+            st.write("**Position :** Allongé, pieds ancrés au sol pour le 'Leg Drive'. Omoplates serrées (rétractées) pour protéger les épaules.")
+            st.write("**Mains :** Largeur supérieure aux épaules. Poignets bien droits au-dessus des avant-bras.")
+        with col2:
+            st.write("**Angle :** Coudes à environ 45° du buste (ne pas les évaser à 90°).")
+            st.write("**Exécution :** Descendre la barre au contact de la partie basse des pectoraux. Poussée explosive en expirant.")
+
+    elif choix_guide == "Squat":
+        col1, col2 = st.columns([1, 1])
+        with col1:
+            st.markdown("#### 🎯 Focus : Quadriceps, Fessiers, Lombaires")
+            st.write("**Position :** Barre sur les trapèzes (High Bar) ou arrière des épaules (Low Bar). Pieds largeur d'épaules.")
+            st.write("**Jambes :** Pieds légèrement ouverts (15-30°).")
+        with col2:
+            st.write("**Angle :** Garder le buste le plus droit possible. Les genoux doivent suivre l'axe des pieds.")
+            st.write("**Exécution :** Descendre jusqu'à ce que les hanches soient sous les genoux. Pousser sur les talons.")
+
+    elif choix_guide == "Soulevé de terre":
+        st.markdown("#### 🎯 Focus : Chaîne postérieure (Dos, Ischios, Fessiers)")
+        st.write("**Position :** Tibias à 2cm de la barre. Dos plat, poitrine sortie. Mains juste à l'extérieur des genoux.")
+        st.write("**Exécution :** Tirer en gardant la barre collée aux jambes. Verrouillage des hanches en haut sans cambrer le dos en arrière.")
+
+    elif choix_guide == "Romanian Deadlift":
+        st.markdown("#### 🎯 Focus : Ischio-jambiers & Fessiers")
+        st.write("**Différence :** On commence debout. On descend la barre en poussant les hanches au maximum vers l'arrière.")
+        st.write("**Angle :** Jambes presque tendues (légère flexion). Arrêter la descente quand le dos commence à s'arrondir.")
+
+    elif choix_guide == "Développé Militaire":
+        st.markdown("#### 🎯 Focus : Épaules (Deltoïde antérieur) & Triceps")
+        st.write("**Position :** Debout, gainage abdominal maximum. Barre repose sur le haut du torse.")
+        st.write("**Exécution :** Pousser la barre verticalement. Passer la tête vers l'avant une fois la barre au-dessus du front.")
+
+    elif choix_guide == "Rowing Barre":
+        st.markdown("#### 🎯 Focus : Épaisseur du dos (Trapèzes, Grands dorsaux)")
+        st.write("**Angle :** Buste penché à 45°. Dos parfaitement plat.")
+        st.write("**Exécution :** Tirer la barre vers le nombril en ramenant les coudes vers l'arrière. Serrer les omoplates en fin de mouvement.")
+
+    elif choix_guide == "Élévations latérales":
+        st.markdown("#### 🎯 Focus : Largeur d'épaules (Deltoïde latéral)")
+        st.write("**Position :** Haltères le long du corps. Légère inclinaison du buste vers l'avant.")
+        st.write("**Angle :** Coudes légèrement fléchis. Monter les bras jusqu'à l'horizontale (pas plus haut).")
+
+    elif choix_guide == "Curl Biceps":
+        st.markdown("#### 🎯 Focus : Biceps Brachial")
+        st.write("**Position :** Coudes collés au buste. Ne pas utiliser l'élan du dos.")
+        st.write("**Exécution :** Rotation du poignet (supination) pour une contraction maximale en haut.")
+
+    st.markdown('</div>', unsafe_allow_html=True)
 # --- TAB REPOS & JEU ---
 with tabs[6]:
     st.markdown("<h2>⏱️ TEMPS DE REPOS</h2>", unsafe_allow_html=True)
