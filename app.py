@@ -28,7 +28,7 @@ import time
     
     h1, h2, h3, h4 {
       font-family: 'Bebas Neue', cursive;
-      letter-spacing: 2px;
+ letter-spacing: 2px;
     }
     
     :root {
