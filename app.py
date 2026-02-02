@@ -5,27 +5,88 @@ import plotly.graph_objects as go
 from datetime import datetime
 import time
 
+import streamlit as st
+import pandas as pd
+import plotly.express as px
+import plotly.graph_objects as go
+from datetime import datetime
+import time
+import streamlit.components.v1 as components
+
 # --- CONFIGURATION ---
 st.set_page_config(page_title="BODYTRACK PRO", page_icon="💪", layout="wide")
 
-# --- INITIALISATION DES VARIABLES (SESSION STATE) ---
-if 'auth' not in st.session_state: st.session_state['auth'] = False
-if 'poids_data' not in st.session_state: st.session_state['poids_data'] = pd.DataFrame(columns=['Date', 'Poids'])
-if 'notes_seances' not in st.session_state: st.session_state['notes_seances'] = {}
-if 'pr_objectifs' not in st.session_state: st.session_state['pr_objectifs'] = {}
+# --- FONCTION POUR INTÉGRER CANVA ---
+def afficher_canva(lien_embed, hauteur=600):
+    components.html(
+        f"""
+        <iframe loading="lazy" 
+            style="width: 100%; height: {hauteur}px; border: none; border-radius: 10px;" 
+            src="{lien_embed}" 
+            allowfullscreen="allowfullscreen" 
+            allow="fullscreen">
+        </iframe>
+        """,
+        height=hauteur,
+    )
 
 # --- STYLE CSS NOIR ET ROUGE ---
 st.markdown("""
     <style>
-    @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Roboto:wght@300;400;700&display=swap');
-    .stApp { background-color: #0a0a0a; color: #ffffff; font-family: 'Roboto', sans-serif; }
-    h1, h2, h3 { font-family: 'Bebas Neue', cursive; color: #dc2626; letter-spacing: 2px; }
-    .card { background-color: #1a1a1a; border: 1px solid #333; border-radius: 10px; padding: 20px; margin-bottom: 15px; }
-    .stButton>button { background-color: #dc2626; color: white; border: none; font-weight: bold; width: 100%; }
-    .stButton>button:hover { background-color: #ff0000; color: white; border: none; }
-    [data-testid="stSidebar"] { background-color: #000000; border-right: 1px solid #dc2626; }
+    .stApp { background-color: #0a0a0a; color: #ffffff; }
+    h1, h2, h3 { color: #dc2626; font-family: 'Bebas Neue', cursive; }
+    .stButton>button { background-color: #dc2626; color: white; border: none; }
     </style>
     """, unsafe_allow_html=True)
+
+# --- ACCÈS ---
+if 'auth' not in st.session_state: st.session_state['auth'] = False
+# (Ici tu gardes ton système de code admin F12Berlinetta88170...)
+
+# --- NAVIGATION ---
+with st.sidebar:
+    menu = st.radio("SÉCTIONS", ["📊 Profil", "💪 Entraînement", "📋 Programmes", "🍽️ Nutrition", "⏱️ Repos & Jeu"])
+
+# ==========================================
+# SECTION 1 : ENTRAÎNEMENT (TECHNIQUE)
+# ==========================================
+if menu == "💪 Entraînement":
+    st.header("💪 GUIDE TECHNIQUE VISUEL")
+    st.write("Voici tes fiches techniques professionnelles :")
+    
+    # REMPLACE LE LIEN CI-DESSOUS
+    lien_technique = "https://www.canva.com/design/DA.../view?embed"
+    afficher_canva(lien_technique, hauteur=800)
+
+# ==========================================
+# SECTION 2 : PROGRAMMES
+# ==========================================
+elif menu == "📋 Programmes":
+    st.header("📋 TES PROGRAMMES DÉTAILLÉS")
+    
+    choix_prog = st.selectbox("Choisir le programme", ["PPL 6 Jours", "Débutant 5 Jours", "Spécial Bench"])
+    
+    if choix_prog == "PPL 6 Jours":
+        # REMPLACE LE LIEN CI-DESSOUS
+        lien_ppl = "https://www.canva.com/design/DA.../view?embed"
+        afficher_canva(lien_ppl, hauteur=900)
+        
+    elif choix_prog == "Débutant 5 Jours":
+        # REMPLACE LE LIEN CI-DESSOUS
+        lien_deb = "https://www.canva.com/design/DA.../view?embed"
+        afficher_canva(lien_deb, hauteur=900)
+
+# ==========================================
+# SECTION 3 : NUTRITION
+# ==========================================
+elif menu == "🍽️ Nutrition":
+    st.header("🍽️ NUTRITION & MENUS")
+    
+    # REMPLACE LE LIEN CI-DESSOUS
+    lien_nutri = https://www.canva.com/design/DAG_QbeW4SU/jqXSEY7jaMUEBLxttSGZRQ/view
+    afficher_canva(lien_nutri, hauteur=700)
+
+# (Tu peux garder tes autres onglets Repos, Profil, etc. comme avant)
 
 # --- ACCÈS SÉCURISÉ ---
 if not st.session_state['auth']:
