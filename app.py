@@ -100,18 +100,7 @@ def load_logo():
     # Logo placeholder - remplacez par votre logo
     return "🏋️‍♂️"
 
-# Navigation avec onglets
-logo = load_logo()
-st.sidebar.markdown(f"# {logo} FitMaster Pro")
-
-menu = st.sidebar.selectbox(
-    "Navigation",
-    ["🏠 Accueil", "👤 Profil", "🎯 Objectifs", "📅 Calendrier", "💪 Entraînement", 
-     "⏱️ Repos", "🧮 Calculateurs", "📝 Notes", "📊 Programmes", "🤖 IA Coach",
-     "🍎 Nutrition", "🔓 Accès Premium"]
-)
-
-# Fonctionnalité d'accès premium
+# Fonction pour vérifier l'accès premium
 def check_premium_access():
     if 'premium_unlocked' not in st.session_state:
         st.session_state.premium_unlocked = False
@@ -136,6 +125,25 @@ def check_premium_access():
             return False
     
     return False
+
+# Fonction pour exporter les données
+def exporter_donnees():
+    """Exporter les données utilisateur"""
+    data_str = json.dumps(st.session_state.user_data, indent=2)
+    b64 = base64.b64encode(data_str.encode()).decode()
+    href = f'<a href="data:file/json;base64,{b64}" download="fitmaster_data.json">📥 Exporter mes données</a>'
+    st.sidebar.markdown(href, unsafe_allow_html=True)
+
+# Navigation avec onglets
+logo = load_logo()
+st.sidebar.markdown(f"# {logo} FitMaster Pro")
+
+menu = st.sidebar.selectbox(
+    "Navigation",
+    ["🏠 Accueil", "👤 Profil", "🎯 Objectifs", "📅 Calendrier", "💪 Entraînement", 
+     "⏱️ Repos", "🧮 Calculateurs", "📝 Notes", "📊 Programmes", "🤖 IA Coach",
+     "🍎 Nutrition", "🔓 Accès Premium"]
+)
 
 # Page d'accueil
 if menu == "🏠 Accueil":
@@ -548,7 +556,25 @@ elif menu == "💪 Entraînement":
             **Angle des mains :** 45° par rapport au torse
             **Respiration :** Inspirer à la descente, expirer à la montée
             """)
-        
+        elif exercice_detail == "Squat":
+            st.markdown("""
+            ### Technique du Squat
+            
+            **Position de départ :**
+            - Barre sur les trapèzes
+            - Pieds écartés largeur d'épaules
+            - Pointes légèrement vers l'extérieur
+            
+            **Descente :**
+            - Flexion des hanches et genoux
+            - Dos droit, regard devant
+            - Descendre jusqu'à parallèle
+            
+            **Remontée :**
+            - Pousser avec les talons
+            - Garder le torse droit
+            - Contracter les fessiers en haut
+            """)
         # Ajouter d'autres exercices ici...
     
     with tabs[3]:
@@ -807,7 +833,33 @@ elif menu == "📊 Programmes":
                     - Curl barre: 3x10-12
                     - Curl marteau: 3x12-15
                     """)
-                # Ajouter les autres jours...
+                elif jour == "Mercredi":
+                    st.markdown("""
+                    **Jambes**
+                    - Squat: 3x8-12
+                    - Presse à cuisses: 3x10-12
+                    - Leg curl: 3x12-15
+                    - Leg extension: 3x12-15
+                    - Mollets: 4x15-20
+                    """)
+                elif jour == "Jeudi":
+                    st.markdown("""
+                    **Épaules/Abdos**
+                    - Développé militaire: 3x8-12
+                    - Élévations latérales: 3x12-15
+                    - Face pull: 3x15-20
+                    - Crunch: 3x20
+                    - Planche: 3x60s
+                    """)
+                elif jour == "Vendredi":
+                    st.markdown("""
+                    **Full Body**
+                    - Soulevé de terre: 3x8-10
+                    - Développé couché: 3x8-12
+                    - Tractions: 3xMax
+                    - Squat: 3x10
+                    - Curl barre: 3x12
+                    """)
     
     with tabs[1]:
         st.subheader("💪 Programme PPL - 6 jours")
@@ -863,6 +915,48 @@ elif menu == "📊 Programmes":
         
         if st.button("Générer le programme personnalisé"):
             st.success(f"Programme généré pour objectif {pr_objectif}kg !")
+    
+    with tabs[3]:
+        st.subheader("🏠 Programme Cardio à la maison")
+        
+        st.markdown("""
+        **Séance 1 (30 minutes):**
+        - Échauffement: 5min jumping jacks
+        - Circuit x4:
+          - Mountain climbers: 45s
+          - Burpees: 30s
+          - High knees: 45s
+          - Repos: 60s
+        
+        **Séance 2 (45 minutes):**
+        - Tabata (20s travail/10s repos x8):
+          - Squat jumps
+          - Push-ups
+          - Plank jacks
+          - Lunges
+        
+        **Séance 3 (HIIT 25 minutes):**
+        - 30s max effort / 90s repos x10
+        - Sprints sur place
+        - Jump squats
+        - Push-up to plank
+        """)
+    
+    with tabs[4]:
+        st.subheader("✏️ Programme Personnalisé")
+        
+        col1, col2 = st.columns(2)
+        with col1:
+            jours_semaine = st.slider("Jours par semaine", 3, 7, 4)
+            niveau = st.selectbox("Niveau", ["Débutant", "Intermédiaire", "Avancé"])
+        
+        with col2:
+            objectif = st.selectbox("Objectif principal", 
+                                  ["Prise de masse", "Perte de poids", "Force", "Endurance"])
+            duree_seance = st.slider("Durée séance (min)", 45, 120, 60)
+        
+        if st.button("Créer mon programme"):
+            st.success(f"Programme {niveau} créé pour {jours_semaine} jours/semaine !")
 
 # Onglet IA Coach
 elif menu == "🤖 IA Coach":
@@ -871,49 +965,55 @@ elif menu == "🤖 IA Coach":
     if not check_premium_access():
         st.warning("⚠️ Cette fonctionnalité nécessite l'accès premium")
         st.info("Débloquez toutes les fonctionnalités avec le code administrateur ou l'achat premium")
-        return
-    
-    st.subheader("🎯 Analyse de vos habitudes")
-    
-    # Analyse des données utilisateur
-    if st.session_state.user_data['poids']:
-        dernier_poids = st.session_state.user_data['poids'][-1]['poids']
-        premier_poids = st.session_state.user_data['poids'][0]['poids']
-        evolution = dernier_poids - premier_poids
+    else:
+        st.subheader("🎯 Analyse de vos habitudes")
         
-        st.markdown(f"""
-        **📊 Analyse actuelle:**
-        - Poids: {dernier_poids}kg ({evolution:+.1f}kg depuis le début)
-        - Exercice préféré: {st.session_state.user_data['exercice_prefere']}
-        - Objectifs en cours: {len(st.session_state.user_data['objectifs'])}
-        """)
-    
-    # Conseils personnalisés
-    st.subheader("💡 Conseils personnalisés")
-    
-    conseil_type = st.selectbox(
-        "Type de conseil",
-        ["Nutrition", "Entraînement", "Récupération", "Progression"]
-    )
-    
-    if st.button("🔄 Obtenir des conseils"):
-        with st.spinner("L'IA analyse vos données..."):
-            time.sleep(2)
+        # Analyse des données utilisateur
+        if st.session_state.user_data['poids']:
+            dernier_poids = st.session_state.user_data['poids'][-1]['poids']
+            premier_poids = st.session_state.user_data['poids'][0]['poids']
+            evolution = dernier_poids - premier_poids
             
-            if conseil_type == "Nutrition":
-                st.success("""
-                **🍎 Conseil Nutrition:**
-                - Augmentez votre apport en protéines à 2g/kg pour optimiser la récupération
-                - Consommez 500g de légumes par jour pour les micronutriments
-                - Hydratation: 40ml/kg d'eau quotidiennement
-                """)
-            elif conseil_type == "Entraînement":
-                st.success("""
-                **💪 Conseil Entraînement:**
-                - Variez vos angles de travail pour les pectoraux
-                - Ajoutez 1 série dégressives à votre dernier exercice
-                - Travaillez la mobilité scapulaire avant vos séances de développé
-                """)
+            st.markdown(f"""
+            **📊 Analyse actuelle:**
+            - Poids: {dernier_poids}kg ({evolution:+.1f}kg depuis le début)
+            - Exercice préféré: {st.session_state.user_data['exercice_prefere']}
+            - Objectifs en cours: {len(st.session_state.user_data['objectifs'])}
+            """)
+        
+        # Conseils personnalisés
+        st.subheader("💡 Conseils personnalisés")
+        
+        conseil_type = st.selectbox(
+            "Type de conseil",
+            ["Nutrition", "Entraînement", "Récupération", "Progression"]
+        )
+        
+        if st.button("🔄 Obtenir des conseils"):
+            with st.spinner("L'IA analyse vos données..."):
+                time.sleep(2)
+                
+                if conseil_type == "Nutrition":
+                    st.success("""
+                    **🍎 Conseil Nutrition:**
+                    - Augmentez votre apport en protéines à 2g/kg pour optimiser la récupération
+                    - Consommez 500g de légumes par jour pour les micronutriments
+                    - Hydratation: 40ml/kg d'eau quotidiennement
+                    """)
+                elif conseil_type == "Entraînement":
+                    st.success("""
+                    **💪 Conseil Entraînement:**
+                    - Variez vos angles de travail pour les pectoraux
+                    - Ajoutez 1 série dégressives à votre dernier exercice
+                    - Travaillez la mobilité scapulaire avant vos séances de développé
+                    """)
+                elif conseil_type == "Récupération":
+                    st.success("""
+                    **😴 Conseil Récupération:**
+                    - Dormez 7-8h par nuit minimum
+                    - Étirements légers après chaque séance
+                    - Prenez 1 jour de repos complet par semaine
+                    """)
 
 # Onglet Nutrition
 elif menu == "🍎 Nutrition":
@@ -921,108 +1021,168 @@ elif menu == "🍎 Nutrition":
     
     if not check_premium_access():
         st.warning("⚠️ Cette fonctionnalité nécessite l'accès premium")
-        return
-    
-    tabs = st.tabs(["👨‍🍳 Chef IA", "📅 Tracker quotidien", "🛒 Liste de courses", "📊 Analyse macros"])
-    
-    with tabs[0]:
-        st.subheader("👨‍🍳 Chef IA - Recettes personnalisées")
+    else:
+        tabs = st.tabs(["👨‍🍳 Chef IA", "📅 Tracker quotidien", "🛒 Liste de courses", "📊 Analyse macros"])
         
-        col1, col2 = st.columns(2)
-        with col1:
-            calories = st.slider("Calories par repas", 300, 1000, 600)
-            proteines = st.slider("Protéines (g)", 20, 80, 40)
+        with tabs[0]:
+            st.subheader("👨‍🍳 Chef IA - Recettes personnalisées")
+            
+            col1, col2 = st.columns(2)
+            with col1:
+                calories = st.slider("Calories par repas", 300, 1000, 600)
+                proteines = st.slider("Protéines (g)", 20, 80, 40)
+            
+            with col2:
+                preferences = st.multiselect(
+                    "Préférences/Restrictions",
+                    ["Végétarien", "Sans gluten", "Sans lactose", "Paleo", "Keto"]
+                )
+                type_repas = st.selectbox("Type de repas", ["Petit-déjeuner", "Déjeuner", "Dîner", "Collation"])
+            
+            if st.button("🍳 Générer une recette"):
+                with st.spinner("Le chef IA prépare votre recette..."):
+                    time.sleep(2)
+                    
+                    st.success(f"""
+                    **🍗 Recette pour {type_repas} ({calories}kcal, {proteines}g protéines)**
+                    
+                    **Poulet aux légumes rôtis:**
+                    - 200g de blanc de poulet
+                    - 150g de brocolis
+                    - 100g de patates douces
+                    - 30g d'amandes
+                    - Huile d'olive, épices
+                    
+                    **Préparation:**
+                    1. Préchauffer le four à 200°C
+                    2. Couper les légumes et le poulet
+                    3. Assaisonner et arroser d'huile d'olive
+                    4. Cuire 25-30 minutes
+                    5. Parsemer d'amandes concassées
+                    
+                    **Macros:** {proteines}g P / 45g G / 20g L
+                    """)
         
-        with col2:
-            preferences = st.multiselect(
-                "Préférences/Restrictions",
-                ["Végétarien", "Sans gluten", "Sans lactose", "Paleo", "Keto"]
+        with tabs[1]:
+            st.subheader("📅 Tracker nutritionnel quotidien")
+            
+            today = datetime.now().strftime('%Y-%m-%d')
+            
+            col1, col2, col3, col4 = st.columns(4)
+            with col1:
+                kcal_jour = st.number_input("Calories aujourd'hui", value=1800)
+            with col2:
+                prots_jour = st.number_input("Protéines (g)", value=120)
+            with col3:
+                gluc_jour = st.number_input("Glucides (g)", value=200)
+            with col4:
+                lip_jour = st.number_input("Lipides (g)", value=60)
+            
+            # Graphique de la semaine
+            jours = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim']
+            calories_semaine = [1800, 1900, 1750, 1850, 1950, 1700, 1600]
+            
+            fig = go.Figure(data=[
+                go.Bar(name='Calories', x=jours, y=calories_semaine, marker_color='red')
+            ])
+            
+            fig.update_layout(
+                title="Calories sur 7 jours",
+                height=300
             )
-            type_repas = st.selectbox("Type de repas", ["Petit-déjeuner", "Déjeuner", "Dîner", "Collation"])
-        
-        if st.button("🍳 Générer une recette"):
-            with st.spinner("Le chef IA prépare votre recette..."):
-                time.sleep(2)
+            
+            st.plotly_chart(fig, use_container_width=True)
+            
+            # Menus à 2300kcal
+            st.subheader("🍽️ Menus à 2300kcal")
+            
+            with st.expander("Menu 1 - Prise de masse"):
+                st.markdown("""
+                **Petit-déjeuner (600kcal):**
+                - 100g flocons d'avoine
+                - 30g whey protéine
+                - 1 banane
+                - 30g amandes
                 
-                st.success(f"""
-                **🍗 Recette pour {type_repas} ({calories}kcal, {proteines}g protéines)**
+                **Déjeuner (800kcal):**
+                - 200g riz basmati
+                - 200g poulet
+                - 200g légumes
+                - 1 cuillère huile d'olive
                 
-                **Poulet aux légumes rôtis:**
-                - 200g de blanc de poulet
-                - 150g de brocolis
-                - 100g de patates douces
-                - 30g d'amandes
-                - Huile d'olive, épices
+                **Dîner (700kcal):**
+                - 200g patate douce
+                - 200g poisson blanc
+                - Salade verte
+                - 30g fromage
                 
-                **Préparation:**
-                1. Préchauffer le four à 200°C
-                2. Couper les légumes et le poulet
-                3. Assaisonner et arroser d'huile d'olive
-                4. Cuire 25-30 minutes
-                5. Parsemer d'amandes concassées
-                
-                **Macros:** {proteines}g P / 45g G / 20g L
+                **Collation (200kcal):**
+                - 200g yaourt grec
+                - 20g noix
                 """)
-    
-    with tabs[1]:
-        st.subheader("📅 Tracker nutritionnel quotidien")
         
-        today = datetime.now().strftime('%Y-%m-%d')
-        
-        col1, col2, col3, col4 = st.columns(4)
-        with col1:
-            kcal_jour = st.number_input("Calories aujourd'hui", value=1800)
-        with col2:
-            prots_jour = st.number_input("Protéines (g)", value=120)
-        with col3:
-            gluc_jour = st.number_input("Glucides (g)", value=200)
-        with col4:
-            lip_jour = st.number_input("Lipides (g)", value=60)
-        
-        # Graphique de la semaine
-        jours = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim']
-        calories_semaine = [1800, 1900, 1750, 1850, 1950, 1700, 1600]
-        
-        fig = go.Figure(data=[
-            go.Bar(name='Calories', x=jours, y=calories_semaine, marker_color='red')
-        ])
-        
-        fig.update_layout(
-            title="Calories sur 7 jours",
-            height=300
-        )
-        
-        st.plotly_chart(fig, use_container_width=True)
-    
-    with tabs[2]:
-        st.subheader("🛒 Liste de courses automatique")
-        
-        if st.button("🔄 Générer la liste de courses"):
-            st.markdown("""
-            **📝 Liste de courses hebdomadaire:**
+        with tabs[2]:
+            st.subheader("🛒 Liste de courses automatique")
             
-            **Protéines:**
-            - Poulet: 1kg
-            - Œufs: 12
-            - Thon: 4 boîtes
-            - Yaourt grec: 1kg
+            if st.button("🔄 Générer la liste de courses"):
+                st.markdown("""
+                **📝 Liste de courses hebdomadaire:**
+                
+                **Protéines:**
+                - Poulet: 1kg
+                - Œufs: 12
+                - Thon: 4 boîtes
+                - Yaourt grec: 1kg
+                
+                **Légumes:**
+                - Brocolis: 1kg
+                - Épinards: 500g
+                - Patates douces: 2kg
+                - Carottes: 1kg
+                
+                **Fruits:**
+                - Bananes: 8
+                - Pommes: 6
+                - Baies surgelées: 500g
+                
+                **Autres:**
+                - Riz basmati: 2kg
+                - Flocons d'avoine: 1kg
+                - Amandes: 500g
+                - Huile d'olive: 1L
+                """)
+        
+        with tabs[3]:
+            st.subheader("📊 Analyse des macros")
             
-            **Légumes:**
-            - Brocolis: 1kg
-            - Épinards: 500g
-            - Patates douces: 2kg
-            - Carottes: 1kg
+            total_calories = 2300
+            col1, col2, col3 = st.columns(3)
             
-            **Fruits:**
-            - Bananes: 8
-            - Pommes: 6
-            - Baies surgelées: 500g
+            with col1:
+                st.metric("Protéines", "150g", "26%")
+                st.progress(0.26)
             
-            **Autres:**
-            - Riz basmati: 2kg
-            - Flocons d'avoine: 1kg
-            - Amandes: 500g
-            """)
+            with col2:
+                st.metric("Glucides", "250g", "43%")
+                st.progress(0.43)
+            
+            with col3:
+                st.metric("Lipides", "85g", "31%")
+                st.progress(0.31)
+            
+            # Diagramme circulaire
+            labels = ['Protéines', 'Glucides', 'Lipides']
+            values = [150*4, 250*4, 85*9]  # Calories de chaque macro
+            
+            fig = go.Figure(data=[go.Pie(
+                labels=labels,
+                values=values,
+                hole=.3,
+                marker_colors=['#ff0000', '#ff6666', '#ff9999']
+            )])
+            
+            fig.update_layout(height=400)
+            st.plotly_chart(fig, use_container_width=True)
 
 # Onglet Accès Premium
 elif menu == "🔓 Accès Premium":
@@ -1053,6 +1213,11 @@ elif menu == "🔓 Accès Premium":
         - Graphiques avancés
         - Export de données
         - Comparaisons détaillées
+        
+        **🎮 Fonctionnalités Exclusives:**
+        - Jeux d'entraînement
+        - Communauté premium
+        - Support prioritaire
         """)
     else:
         st.warning("🔒 Fonctionnalités premium verrouillées")
@@ -1070,12 +1235,22 @@ elif menu == "🔓 Accès Premium":
             - Analytics avancés
             - Support prioritaire
             - Mises à jour gratuites
+            - Contenu exclusif
             
             **Prix: 20€ - Paiement unique**
+            (Accès à vie)
             """)
             
             if st.button("💳 Acheter maintenant - 20€"):
-                st.info("Intégration de paiement à venir (Stripe, PayPal)")
+                st.info("""
+                **Intégration de paiement à venir:**
+                - Stripe
+                - PayPal
+                - Carte bancaire
+                - Crypto
+                
+                Pour tester immédiatement, utilisez le code administrateur.
+                """)
         
         with col2:
             st.markdown("""
@@ -1084,12 +1259,14 @@ elif menu == "🔓 Accès Premium":
             Entrez le code pour débloquer gratuitement:
             """)
             
-            code_input = st.text_input("Code", type="password")
+            code_input = st.text_input("Code", type="password", key="admin_code")
             
             if st.button("Déverrouiller avec code"):
                 if code_input == "F12Berlinetta88170":
                     st.session_state.premium_unlocked = True
                     st.success("✅ Accès premium activé !")
+                    st.balloons()
+                    time.sleep(1)
                     st.rerun()
                 else:
                     st.error("❌ Code incorrect")
@@ -1099,35 +1276,34 @@ st.markdown("---")
 st.markdown("""
 <div style='text-align: center; color: #666;'>
     <p>FitMaster Pro © 2024 - Application d'entraînement personnel</p>
-    <p>Pour toute question: support@fitmaster.com</p>
+    <p>Pour toute question: support@fitmaster.com | Tél: +33 1 23 45 67 89</p>
+    <p>
+        <a href="#" style='color: #ff0000; margin: 0 10px;'>Conditions d'utilisation</a> | 
+        <a href="#" style='color: #ff0000; margin: 0 10px;'>Politique de confidentialité</a> | 
+        <a href="#" style='color: #ff0000; margin: 0 10px;'>Contact</a>
+    </p>
 </div>
 """, unsafe_allow_html=True)
-
-# Fonctions supplémentaires
-def exporter_donnees():
-    """Exporter les données utilisateur"""
-    data_str = json.dumps(st.session_state.user_data, indent=2)
-    b64 = base64.b64encode(data_str.encode()).decode()
-    href = f'<a href="data:file/json;base64,{b64}" download="fitmaster_data.json">📥 Exporter mes données</a>'
-    st.sidebar.markdown(href, unsafe_allow_html=True)
-
-def importer_donnees():
-    """Importer des données"""
-    uploaded_file = st.sidebar.file_uploader("Importer données", type=['json'])
-    if uploaded_file:
-        data = json.load(uploaded_file)
-        st.session_state.user_data.update(data)
-        st.sidebar.success("Données importées !")
 
 # Sidebar supplémentaire
 with st.sidebar:
     st.markdown("---")
     st.markdown("### 🔧 Outils")
     
-    if st.button("🔄 Actualiser les données"):
+    if st.button("🔄 Actualiser l'application"):
         st.rerun()
     
     exporter_donnees()
+    
+    # Import de données
+    uploaded_file = st.file_uploader("📤 Importer données", type=['json'])
+    if uploaded_file:
+        try:
+            data = json.load(uploaded_file)
+            st.session_state.user_data.update(data)
+            st.sidebar.success("Données importées avec succès !")
+        except:
+            st.sidebar.error("Erreur lors de l'importation")
     
     st.markdown("---")
     st.markdown("### 📊 Statistiques rapides")
@@ -1138,3 +1314,16 @@ with st.sidebar:
     
     if st.session_state.user_data.get('objectifs'):
         st.metric("Objectifs actifs", len(st.session_state.user_data['objectifs']))
+    
+    if st.session_state.user_data.get('entrainements'):
+        total_series = sum(len(sessions) for sessions in st.session_state.user_data['entrainements'].values())
+        st.metric("Séries réalisées", total_series)
+    
+    st.markdown("---")
+    st.markdown("### ⚙️ Paramètres")
+    
+    theme = st.selectbox("Thème", ["Sombre", "Clair"], index=0)
+    notifications = st.checkbox("Notifications", value=True)
+    
+    if st.button("💾 Sauvegarder paramètres"):
+        st.sidebar.success("Paramètres sauvegardés !")
