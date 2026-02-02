@@ -835,4 +835,306 @@ elif menu == "📊 Programmes":
         - Abdominaux: 3xMax
         """)
     
-    with tabs[
+    with tabs[2]:
+        st.subheader("🔥 Programme Amélioration PR au Bench")
+        
+        pr_objectif = st.number_input("PR objectif (kg)", min_value=50, max_value=300, value=100)
+        
+        st.markdown(f"""
+        **Basé sur votre objectif de {pr_objectif}kg:**
+        
+        **Lundi:**
+        - 4 série de 5 répétitions à {pr_objectif*0.75:.1f}kg (75%)
+        - Bench haltère: 3 série de 6-10 répétitions
+        - Triceps (au choix): 3 série de 10-12 répétitions
+        
+        **Mercredi:**
+        - 3 série de 7 répétitions à {pr_objectif*0.65:.1f}kg (65%) - tempo 2s
+        - Développé militaire: 3 série de 6-10 répétitions
+        - Triceps: 3 série de 8-10 répétitions
+        - Biceps: 3 série de 10-12 répétitions
+        
+        **Samedi:**
+        - Single à {pr_objectif*0.8:.1f}kg (80%)
+        - 3 série de 3 répétitions à {pr_objectif*0.75:.1f}kg (75%)
+        
+        **Progression:** +3% par semaine si réussi
+        """)
+        
+        if st.button("Générer le programme personnalisé"):
+            st.success(f"Programme généré pour objectif {pr_objectif}kg !")
+
+# Onglet IA Coach
+elif menu == "🤖 IA Coach":
+    st.title("🤖 Coach IA Personnel")
+    
+    if not check_premium_access():
+        st.warning("⚠️ Cette fonctionnalité nécessite l'accès premium")
+        st.info("Débloquez toutes les fonctionnalités avec le code administrateur ou l'achat premium")
+        return
+    
+    st.subheader("🎯 Analyse de vos habitudes")
+    
+    # Analyse des données utilisateur
+    if st.session_state.user_data['poids']:
+        dernier_poids = st.session_state.user_data['poids'][-1]['poids']
+        premier_poids = st.session_state.user_data['poids'][0]['poids']
+        evolution = dernier_poids - premier_poids
+        
+        st.markdown(f"""
+        **📊 Analyse actuelle:**
+        - Poids: {dernier_poids}kg ({evolution:+.1f}kg depuis le début)
+        - Exercice préféré: {st.session_state.user_data['exercice_prefere']}
+        - Objectifs en cours: {len(st.session_state.user_data['objectifs'])}
+        """)
+    
+    # Conseils personnalisés
+    st.subheader("💡 Conseils personnalisés")
+    
+    conseil_type = st.selectbox(
+        "Type de conseil",
+        ["Nutrition", "Entraînement", "Récupération", "Progression"]
+    )
+    
+    if st.button("🔄 Obtenir des conseils"):
+        with st.spinner("L'IA analyse vos données..."):
+            time.sleep(2)
+            
+            if conseil_type == "Nutrition":
+                st.success("""
+                **🍎 Conseil Nutrition:**
+                - Augmentez votre apport en protéines à 2g/kg pour optimiser la récupération
+                - Consommez 500g de légumes par jour pour les micronutriments
+                - Hydratation: 40ml/kg d'eau quotidiennement
+                """)
+            elif conseil_type == "Entraînement":
+                st.success("""
+                **💪 Conseil Entraînement:**
+                - Variez vos angles de travail pour les pectoraux
+                - Ajoutez 1 série dégressives à votre dernier exercice
+                - Travaillez la mobilité scapulaire avant vos séances de développé
+                """)
+
+# Onglet Nutrition
+elif menu == "🍎 Nutrition":
+    st.title("🍎 Nutrition & Recettes")
+    
+    if not check_premium_access():
+        st.warning("⚠️ Cette fonctionnalité nécessite l'accès premium")
+        return
+    
+    tabs = st.tabs(["👨‍🍳 Chef IA", "📅 Tracker quotidien", "🛒 Liste de courses", "📊 Analyse macros"])
+    
+    with tabs[0]:
+        st.subheader("👨‍🍳 Chef IA - Recettes personnalisées")
+        
+        col1, col2 = st.columns(2)
+        with col1:
+            calories = st.slider("Calories par repas", 300, 1000, 600)
+            proteines = st.slider("Protéines (g)", 20, 80, 40)
+        
+        with col2:
+            preferences = st.multiselect(
+                "Préférences/Restrictions",
+                ["Végétarien", "Sans gluten", "Sans lactose", "Paleo", "Keto"]
+            )
+            type_repas = st.selectbox("Type de repas", ["Petit-déjeuner", "Déjeuner", "Dîner", "Collation"])
+        
+        if st.button("🍳 Générer une recette"):
+            with st.spinner("Le chef IA prépare votre recette..."):
+                time.sleep(2)
+                
+                st.success(f"""
+                **🍗 Recette pour {type_repas} ({calories}kcal, {proteines}g protéines)**
+                
+                **Poulet aux légumes rôtis:**
+                - 200g de blanc de poulet
+                - 150g de brocolis
+                - 100g de patates douces
+                - 30g d'amandes
+                - Huile d'olive, épices
+                
+                **Préparation:**
+                1. Préchauffer le four à 200°C
+                2. Couper les légumes et le poulet
+                3. Assaisonner et arroser d'huile d'olive
+                4. Cuire 25-30 minutes
+                5. Parsemer d'amandes concassées
+                
+                **Macros:** {proteines}g P / 45g G / 20g L
+                """)
+    
+    with tabs[1]:
+        st.subheader("📅 Tracker nutritionnel quotidien")
+        
+        today = datetime.now().strftime('%Y-%m-%d')
+        
+        col1, col2, col3, col4 = st.columns(4)
+        with col1:
+            kcal_jour = st.number_input("Calories aujourd'hui", value=1800)
+        with col2:
+            prots_jour = st.number_input("Protéines (g)", value=120)
+        with col3:
+            gluc_jour = st.number_input("Glucides (g)", value=200)
+        with col4:
+            lip_jour = st.number_input("Lipides (g)", value=60)
+        
+        # Graphique de la semaine
+        jours = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim']
+        calories_semaine = [1800, 1900, 1750, 1850, 1950, 1700, 1600]
+        
+        fig = go.Figure(data=[
+            go.Bar(name='Calories', x=jours, y=calories_semaine, marker_color='red')
+        ])
+        
+        fig.update_layout(
+            title="Calories sur 7 jours",
+            height=300
+        )
+        
+        st.plotly_chart(fig, use_container_width=True)
+    
+    with tabs[2]:
+        st.subheader("🛒 Liste de courses automatique")
+        
+        if st.button("🔄 Générer la liste de courses"):
+            st.markdown("""
+            **📝 Liste de courses hebdomadaire:**
+            
+            **Protéines:**
+            - Poulet: 1kg
+            - Œufs: 12
+            - Thon: 4 boîtes
+            - Yaourt grec: 1kg
+            
+            **Légumes:**
+            - Brocolis: 1kg
+            - Épinards: 500g
+            - Patates douces: 2kg
+            - Carottes: 1kg
+            
+            **Fruits:**
+            - Bananes: 8
+            - Pommes: 6
+            - Baies surgelées: 500g
+            
+            **Autres:**
+            - Riz basmati: 2kg
+            - Flocons d'avoine: 1kg
+            - Amandes: 500g
+            """)
+
+# Onglet Accès Premium
+elif menu == "🔓 Accès Premium":
+    st.title("🔓 Accès Premium")
+    
+    if check_premium_access():
+        st.success("✅ Vous avez déjà accès à toutes les fonctionnalités premium !")
+        
+        st.markdown("""
+        ### 🎉 Fonctionnalités Premium débloquées:
+        
+        **🤖 Coach IA Personnel:**
+        - Analyse avancée de vos données
+        - Conseils personnalisés en temps réel
+        - Adaptation automatique des programmes
+        
+        **👨‍🍳 Chef IA Nutrition:**
+        - Recettes sur mesure selon vos macros
+        - Plans alimentaires complets
+        - Liste de courses intelligente
+        
+        **📊 Programmes Avancés:**
+        - Programmes personnalisés PPL
+        - Suivi de progression détaillé
+        - Adaptation automatique des charges
+        
+        **📈 Analytics Premium:**
+        - Graphiques avancés
+        - Export de données
+        - Comparaisons détaillées
+        """)
+    else:
+        st.warning("🔒 Fonctionnalités premium verrouillées")
+        
+        col1, col2 = st.columns([2, 1])
+        
+        with col1:
+            st.markdown("""
+            ### 🚀 Passez à la version premium
+            
+            **Ce que vous obtenez:**
+            - Coach IA personnel 24/7
+            - Chef IA nutrition avec recettes illimitées
+            - Programmes d'entraînement sur mesure
+            - Analytics avancés
+            - Support prioritaire
+            - Mises à jour gratuites
+            
+            **Prix: 20€ - Paiement unique**
+            """)
+            
+            if st.button("💳 Acheter maintenant - 20€"):
+                st.info("Intégration de paiement à venir (Stripe, PayPal)")
+        
+        with col2:
+            st.markdown("""
+            ### 🔑 Code administrateur
+            
+            Entrez le code pour débloquer gratuitement:
+            """)
+            
+            code_input = st.text_input("Code", type="password")
+            
+            if st.button("Déverrouiller avec code"):
+                if code_input == "F12Berlinetta88170":
+                    st.session_state.premium_unlocked = True
+                    st.success("✅ Accès premium activé !")
+                    st.rerun()
+                else:
+                    st.error("❌ Code incorrect")
+
+# Footer
+st.markdown("---")
+st.markdown("""
+<div style='text-align: center; color: #666;'>
+    <p>FitMaster Pro © 2024 - Application d'entraînement personnel</p>
+    <p>Pour toute question: support@fitmaster.com</p>
+</div>
+""", unsafe_allow_html=True)
+
+# Fonctions supplémentaires
+def exporter_donnees():
+    """Exporter les données utilisateur"""
+    data_str = json.dumps(st.session_state.user_data, indent=2)
+    b64 = base64.b64encode(data_str.encode()).decode()
+    href = f'<a href="data:file/json;base64,{b64}" download="fitmaster_data.json">📥 Exporter mes données</a>'
+    st.sidebar.markdown(href, unsafe_allow_html=True)
+
+def importer_donnees():
+    """Importer des données"""
+    uploaded_file = st.sidebar.file_uploader("Importer données", type=['json'])
+    if uploaded_file:
+        data = json.load(uploaded_file)
+        st.session_state.user_data.update(data)
+        st.sidebar.success("Données importées !")
+
+# Sidebar supplémentaire
+with st.sidebar:
+    st.markdown("---")
+    st.markdown("### 🔧 Outils")
+    
+    if st.button("🔄 Actualiser les données"):
+        st.rerun()
+    
+    exporter_donnees()
+    
+    st.markdown("---")
+    st.markdown("### 📊 Statistiques rapides")
+    
+    if st.session_state.user_data['poids']:
+        poids_actuel = st.session_state.user_data['poids'][-1]['poids']
+        st.metric("Poids actuel", f"{poids_actuel} kg")
+    
+    if st.session_state.user_data.get('objectifs'):
+        st.metric("Objectifs actifs", len(st.session_state.user_data['objectifs']))
