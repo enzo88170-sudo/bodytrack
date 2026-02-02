@@ -210,7 +210,8 @@ with tabs[6]:
         st.markdown('</div>', unsafe_allow_html=True)
     
     with col_t2:
-        with tabs[6]: # L'onglet Repos
+        with tabs[6]:         
+            # L'onglet Repos
     st.markdown("<h2>⏱️ TEMPS DE REPOS</h2>", unsafe_allow_html=True)
     
     # ... (Garde ton code du chronomètre ici) ...
