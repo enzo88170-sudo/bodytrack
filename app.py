@@ -6,13 +6,14 @@ import plotly.express as px
 from datetime import datetime, timedelta
 import time
 import json
-import matplotlib.pyplot as plt
 import matplotlib
-matplotlib.use('Agg')
+matplotlib.use('Agg')  # DOIT être AVANT plt import
+import matplotlib.pyplot as plt
 from PIL import Image
 import io
 import base64
 import hashlib
+import calendar
 
 # Configuration de la page
 st.set_page_config(
@@ -421,7 +422,6 @@ elif menu == "📅 Calendrier":
     st.subheader("📅 Vue mensuelle")
     
     # Générer les jours du mois
-    import calendar
     cal = calendar.Calendar()
     month_days = cal.monthdatescalendar(today.year, today.month)
     
@@ -575,7 +575,44 @@ elif menu == "💪 Entraînement":
             - Garder le torse droit
             - Contracter les fessiers en haut
             """)
-        # Ajouter d'autres exercices ici...
+        elif exercice_detail == "Soulevé de terre":
+            st.markdown("""
+            ### Technique du Soulevé de Terre
+            
+            **Position de départ :**
+            - Barre contre les tibias
+            - Pieds largeur de hanches
+            - Dos droit, hanches basses
+            
+            **Soulevé :**
+            - Pousser avec les jambes
+            - Garder la barre proche du corps
+            - Dos contracté et droit
+            
+            **Descente :**
+            - Flexion des hanches d'abord
+            - Barre contrôle le long des cuisses
+            - Repos au sol entre reps
+            """)
+        elif exercice_detail == "Développé militaire":
+            st.markdown("""
+            ### Technique du Développé Militaire
+            
+            **Position de départ :**
+            - Debout ou assis
+            - Barre au niveau des clavicules
+            - Poignets droits
+            
+            **Montée :**
+            - Pousser verticalement
+            - Garder le tronc gainé
+            - Passer près du visage
+            
+            **Descente :**
+            - Contrôler la descente
+            - Arrêter au niveau des épaules
+            - Répéter sans élan
+            """)
     
     with tabs[3]:
         # Historique détaillé
@@ -1004,7 +1041,7 @@ elif menu == "🤖 IA Coach":
                     st.success("""
                     **💪 Conseil Entraînement:**
                     - Variez vos angles de travail pour les pectoraux
-                    - Ajoutez 1 série dégressives à votre dernier exercice
+                    - Ajoutez 1 série dégressive à votre dernier exercice
                     - Travaillez la mobilité scapulaire avant vos séances de développé
                     """)
                 elif conseil_type == "Récupération":
@@ -1119,6 +1156,32 @@ elif menu == "🍎 Nutrition":
                 **Collation (200kcal):**
                 - 200g yaourt grec
                 - 20g noix
+                """)
+            
+            with st.expander("Menu 2 - Équilibré"):
+                st.markdown("""
+                **Petit-déjeuner (550kcal):**
+                - 2 tranches pain complet
+                - 2 œufs
+                - 1 avocat
+                - Fruit de saison
+                
+                **Déjeuner (850kcal):**
+                - 150g quinoa
+                - 150g steak haché 5%
+                - 250g légumes variés
+                - Vinaigrette légère
+                
+                **Dîner (700kcal):**
+                - 150g pâtes complètes
+                - 150g thon
+                - Sauce tomate
+                - Parmesan
+                
+                **Collation (200kcal):**
+                - Fromage blanc 0%
+                - 1 cuillère miel
+                - Noix
                 """)
         
         with tabs[2]:
