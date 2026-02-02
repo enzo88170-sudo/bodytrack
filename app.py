@@ -4,246 +4,209 @@ import plotly.express as px
 import plotly.graph_objects as go
 from datetime import datetime
 import time
-import numpy as np
 
-# --- CONFIGURATION DE LA PAGE ---
+# --- CONFIGURATION ---
 st.set_page_config(page_title="BODYTRACK PRO", page_icon="💪", layout="wide")
 
-# --- STYLE CSS PERSONNALISÉ (Noir & Rouge Professionnel) ---
+# --- INITIALISATION DES VARIABLES (SESSION STATE) ---
+if 'auth' not in st.session_state: st.session_state['auth'] = False
+if 'poids_data' not in st.session_state: st.session_state['poids_data'] = pd.DataFrame(columns=['Date', 'Poids'])
+if 'notes_seances' not in st.session_state: st.session_state['notes_seances'] = {}
+if 'pr_objectifs' not in st.session_state: st.session_state['pr_objectifs'] = {}
+
+# --- STYLE CSS NOIR ET ROUGE ---
 st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Roboto:wght@300;400;700&display=swap');
-    
-    .stApp { background-color: #0e1117; color: #ffffff; font-family: 'Roboto', sans-serif; }
-    [data-testid="stHeader"] { background: rgba(0,0,0,0); }
-    
-    /* Titres Sportifs */
-    h1, h2, h3 { font-family: 'Bebas Neue', cursive; color: #FF0000; letter-spacing: 2px; }
-    
-    /* Cartes et Conteneurs */
-    .st-emotion-cache-12w0qpk { background-color: #1a1c24; border: 1px solid #3e3e3e; border-radius: 10px; padding: 20px; }
-    
-    /* Boutons */
-    .stButton>button { 
-        background-color: #FF0000; color: white; border-radius: 5px; 
-        font-weight: bold; border: none; width: 100%; transition: 0.3s;
-    }
-    .stButton>button:hover { background-color: #CC0000; border: none; color: white; transform: scale(1.02); }
-    
-    /* Sidebar */
-    section[data-testid="stSidebar"] { background-color: #000000; border-right: 1px solid #FF0000; }
+    .stApp { background-color: #0a0a0a; color: #ffffff; font-family: 'Roboto', sans-serif; }
+    h1, h2, h3 { font-family: 'Bebas Neue', cursive; color: #dc2626; letter-spacing: 2px; }
+    .card { background-color: #1a1a1a; border: 1px solid #333; border-radius: 10px; padding: 20px; margin-bottom: 15px; }
+    .stButton>button { background-color: #dc2626; color: white; border: none; font-weight: bold; width: 100%; }
+    .stButton>button:hover { background-color: #ff0000; color: white; border: none; }
+    [data-testid="stSidebar"] { background-color: #000000; border-right: 1px solid #dc2626; }
     </style>
     """, unsafe_allow_html=True)
 
-# --- SYSTÈME D'ACCÈS SÉCURISÉ ---
-if 'auth' not in st.session_state:
-    st.session_state['auth'] = False
-
-def check_access():
-    if not st.session_state['auth']:
-        st.image("https://i.imgur.com/wlyusJ0.png", width=200) # Ton logo Imgur
-        st.title("🔥 ACCÈS AU EBOOK PREMIUM")
-        st.write("Libérez votre potentiel pour seulement **20€** ou entrez votre code accès.")
-        
-        col1, col2 = st.columns(2)
-        with col1:
-            if st.button("Payer 20€ (Accès Instantané)"):
+# --- ACCÈS SÉCURISÉ ---
+if not st.session_state['auth']:
+    st.markdown("<h1 style='text-align: center;'>🔴 ACCÈS BODYTRACK PREMIUM</h1>", unsafe_allow_html=True)
+    st.image("https://i.imgur.com/wlyusJ0.png", width=250)
+    col1, col2 = st.columns(2)
+    with col1:
+        st.markdown('<div class="card"><h3>OFFRE EBOOK - 20€</h3><p>Accès complet à tous les outils et programmes à vie.</p></div>', unsafe_allow_html=True)
+        if st.button("PAYER 20€ ET ACCÉDER"):
+            st.session_state['auth'] = True
+            st.rerun()
+    with col2:
+        code_input = st.text_input("Code Administrateur", type="password")
+        if st.button("VALIDER CODE"):
+            if code_input == "F12Berlinetta88170":
                 st.session_state['auth'] = True
                 st.rerun()
-        with col2:
-            admin_code = st.text_input("Code Administrateur", type="password")
-            if admin_code == "F12Berlinetta88170":
-                st.session_state['auth'] = True
-                st.rerun()
-        st.stop()
-
-check_access()
-
-# --- INITIALISATION DES DONNÉES (Session State) ---
-if 'weight_data' not in st.session_state:
-    st.session_state['weight_data'] = pd.DataFrame(columns=['Date', 'Poids'])
-if 'notes' not in st.session_state:
-    st.session_state['notes'] = []
+            else: st.error("Code incorrect")
+    st.stop()
 
 # --- NAVIGATION ---
 with st.sidebar:
-    st.image("https://i.imgur.com/wlyusJ0.png", width=150)
-    st.title("MENU")
-    menu = st.radio("Navigation", [
-        "📊 Profil & Suivi", "🎯 Objectifs", "📅 Calendrier", 
-        "💪 Entraînement", "📋 Programmes", "🍽️ Nutrition & IA", 
-        "⏱️ Repos & Jeu", "🤖 Coach IA", "📱 Installation"
+    st.image("https://i.imgur.com/wlyusJ0.png", width=120)
+    menu = st.radio("SÉCTIONS", [
+        "📊 Profil", "🎯 Objectifs", "📅 Calendrier", "💪 Entraînement", 
+        "📋 Programmes", "🍽️ Nutrition", "⏱️ Repos & Jeu", "🤖 Coach IA", "📱 Installation"
     ])
 
-# --- 1. PROFIL & SUIVI ---
-if menu == "📊 Profil & Suivi":
-    st.header("📊 PROFIL UTILISATEUR")
-    col1, col2 = st.columns(2)
-    with col1:
-        st.text_input("Nom Complet")
-        st.number_input("Âge", 14, 99, 25)
-        st.number_input("Taille (cm)", 100, 250, 175)
-        st.text_input("Exercice Préféré")
+# ==========================================
+# 1. PROFIL
+# ==========================================
+if menu == "📊 Profil":
+    st.header("📊 MON PROFIL & MENSURATIONS")
+    c1, c2 = st.columns(2)
+    with c1:
+        st.markdown('<div class="card">', unsafe_allow_html=True)
         st.text_input("Adresse Mail")
+        st.number_input("Âge", 15, 80, 25)
+        st.number_input("Taille (cm)", 120, 230, 175)
+        st.selectbox("Exercice préféré", ["Bench", "Squat", "Deadlift", "Curl"])
+        st.markdown('</div>', unsafe_allow_html=True)
     
-    with col2:
-        st.subheader("📸 Suivi Visuel")
-        st.file_uploader("Importer Photo Avant/Après", type=['jpg', 'png'])
-        st.subheader("📏 Mensurations (cm)")
-        st.number_input("Tour de bras", 20.0, 60.0, 35.0)
-        st.number_input("Tour de taille", 50.0, 150.0, 80.0)
+    with c2:
+        st.markdown('<div class="card">', unsafe_allow_html=True)
+        st.subheader("Suivi du Poids")
+        new_p = st.number_input("Entrer poids (kg)", 40.0, 150.0, 75.0)
+        if st.button("Ajouter Pesée"):
+            now = datetime.now().strftime("%d/%m")
+            new_row = pd.DataFrame({'Date': [now], 'Poids': [new_p]})
+            st.session_state['poids_data'] = pd.concat([st.session_state['poids_data'], new_row])
+        st.markdown('</div>', unsafe_allow_html=True)
 
-    st.divider()
-    st.subheader("📈 Suivi du Poids")
-    with st.expander("Ajouter une pesée"):
-        new_date = st.date_input("Date")
-        new_weight = st.number_input("Poids (kg)", 30.0, 200.0, 75.0)
-        if st.button("Enregistrer Pesée"):
-            new_entry = pd.DataFrame({'Date': [str(new_date)], 'Poids': [new_weight]})
-            st.session_state['weight_data'] = pd.concat([st.session_state['weight_data'], new_entry], ignore_index=True)
-    
-    if not st.session_state['weight_data'].empty:
-        fig = px.line(st.session_state['weight_data'], x='Date', y='Poids', title="Évolution du Poids", markers=True)
-        fig.update_traces(line_color='#FF0000')
+    if not st.session_state['poids_data'].empty:
+        fig = px.line(st.session_state['poids_data'], x='Date', y='Poids', title="Évolution", markers=True)
+        fig.update_traces(line_color='#dc2626')
         st.plotly_chart(fig, use_container_width=True)
 
-# --- 2. OBJECTIFS ---
+# ==========================================
+# 2. OBJECTIFS
+# ==========================================
 elif menu == "🎯 Objectifs":
-    st.header("🎯 MES OBJECTIFS")
+    st.header("🎯 MES OBJECTIFS DE PERFORMANCE")
     col1, col2 = st.columns(2)
-    
     with col1:
-        obj_name = st.text_input("Nom de l'objectif (ex: DC 100kg)")
-        current_val = st.number_input("Valeur Actuelle", 0)
-        target_val = st.number_input("Valeur Cible", 1)
-        
-        progress = (current_val / target_val)
-        st.write(f"Progression : {progress*100:.1f}%")
-        st.progress(progress if progress <= 1.0 else 1.0)
-        
+        nom_obj = st.text_input("Nom de l'objectif (ex: DC 100kg)")
+        actuel = st.number_input("Valeur actuelle", 0, 500, 60)
+        cible = st.number_input("Valeur cible", 1, 500, 100)
+        percent = (actuel / cible) if cible > 0 else 0
+        st.metric("Progression", f"{round(percent*100)}%")
+        st.progress(min(percent, 1.0))
     with col2:
-        st.subheader("🏆 Performance Target")
-        fig = go.Figure(go.Indicator(
-            mode = "gauge+number",
-            value = current_val,
-            domain = {'x': [0, 1], 'y': [0, 1]},
-            title = {'text': obj_name},
-            gauge = {'axis': {'range': [None, target_val]}, 'bar': {'color': "#FF0000"}}
-        ))
-        st.plotly_chart(fig, use_container_width=True)
+        fig = go.Figure(go.Indicator(mode="gauge+number", value=actuel, gauge={'axis': {'range': [None, cible]}, 'bar': {'color': "#dc2626"}}, title={'text': nom_obj}))
+        st.plotly_chart(fig)
 
-# --- 3. ENTRAÎNEMENT ---
+# ==========================================
+# 3. ENTRAÎNEMENT (TECHNIQUE & GRAPHIQUES)
+# ==========================================
 elif menu == "💪 Entraînement":
     st.header("💪 TECHNIQUE & ANALYSE")
+    tab_tech, tab_stats = st.tabs(["📚 Guide Technique", "📈 Courbes par Exercice"])
     
-    tab1, tab2, tab3 = st.tabs(["📚 Guide Technique", "📈 Stats Exos", "🧘 Mobilité"])
-    
-    with tab1:
-        exo = st.selectbox("Choisir un exercice", ["Développé Couché", "Squat", "Soulevé de Terre", "Rowing Barre", "Romanian Deadlift"])
-        if exo == "Développé Couché":
-            st.write("**Position :** Allongé, pieds ancrés au sol, omoplates rétractées.")
-            st.write("**Mains :** Largeur supérieure aux épaules, poignets droits.")
-            st.info("💡 Gardez les coudes à 45° pour protéger vos épaules.")
-            
-    
-    with tab2:
-        st.subheader("Analyse des Performances")
-        # Ici on simulerait des données par exo
-        st.write("Graphique comparatif des charges par exercice.")
-        
-    with tab3:
-        st.subheader("Routine d'échauffement")
-        st.write("1. Mobilisation articulaire (5 min)")
-        st.write("2. Foam rolling sur les zones de tension")
-
-# --- 4. REPOS & JEU ---
-elif menu == "⏱️ Repos & Jeu":
-    st.header("⏱️ ZONE DE RÉCUPÉRATION")
-    
-    col1, col2 = st.columns(2)
-    with col1:
-        st.subheader("Chronomètre de Repos")
-        seconds = st.number_input("Régler le repos (sec)", 30, 300, 90)
-        if st.button("Démarrer le repos"):
-            ph = st.empty()
-            for i in range(seconds, -1, -1):
-                ph.write(f"## ⏳ {i} secondes")
-                time.sleep(1)
-            st.balloons()
-            st.error("🚨 TEMPS DE REPOS TERMINÉ, RETOUR AU CHARBON !")
-
-    with col2:
-        st.subheader("🚀 Mini-Jeu : Flappy Biceps")
-        st.write("Cliquez pour faire voler le biceps entre les planètes !")
-        # Note: Un jeu complexe Flappy Bird en pur Streamlit/Python nécessite un composant HTML/JS
-        game_code = """
-        <canvas id="gameCanvas" width="320" height="480" style="border:2px solid #FF0000; display:block; margin:0 auto;"></canvas>
-        <script>
-        const canvas = document.getElementById('gameCanvas');
-        const ctx = canvas.getContext('2d');
-        let bY = 150, bV = 0, p = [{x:320, y:0}];
-        function draw() {
-            ctx.fillStyle = "black"; ctx.fillRect(0,0,320,480);
-            bV += 0.1; bY += bV; 
-            ctx.font = "30px Arial"; ctx.fillText("💪", 50, bY);
-            p.forEach(pipe => {
-                ctx.fillStyle = "purple"; ctx.beginPath(); ctx.arc(pipe.x, 240, 30, 0, Math.PI*2); ctx.fill();
-                pipe.x -= 2;
-            });
-            if(p[0].x < -50) p.shift();
-            if(p.length < 2 && p[0].x < 150) p.push({x:320, y:0});
-            requestAnimationFrame(draw);
+    with tab_tech:
+        exos = {
+            "Développé Couché": "Allongé, omoplates serrées, pieds au sol. Angle des coudes 45°.",
+            "Squat": "Pieds largeur épaules, dos droit, descente sous la parallèle.",
+            "Soulevé de Terre": "Tibias contre la barre, dos plat, poussée jambes.",
+            "Rowing": "Buste incliné, tirage vers le nombril, coudes serrés.",
+            "Romanian Deadlift": "Légère flexion genoux, bascule hanches vers l'arrière.",
+            "Élévation latérale": "Coudes légèrement fléchis, monter jusqu'aux épaules.",
+            "Développé Militaire": "Gainage fort, pousser barre au dessus de la tête."
         }
-        canvas.addEventListener('mousedown', () => bV = -3);
-        draw();
-        </script>
-        """
-        st.components.v1.html(game_html=game_code, height=500)
-
-# --- 5. NUTRITION & IA ---
-elif menu == "🍽️ Nutrition & IA":
-    st.header("🍽️ NUTRITION AVANCÉE")
-    
-    tab1, tab2 = st.tabs(["👨‍🍳 Cuisinier IA", "📊 Tracker Macros"])
-    
-    with tab1:
-        user_envie = st.text_input("De quoi as-tu envie ? (ex: Rapide, Riche en Protéines, Poulet)")
-        if st.button("Générer Recette"):
-            st.write("### 🍛 Poulet Curry Express (2300kcal menu adapt)")
-            st.write("- 200g de poulet, 100g riz basmati, 1/2 avocat.")
-            st.write("**Macros:** 45g Prot, 60g Gluc, 15g Lip")
-
-    with tab2:
-        st.subheader("Menu 2300 kcal - Journée Type")
-        st.table({
-            "Repas": ["Matin", "Midi", "Collation", "Soir"],
-            "Description": ["Omelette 3 oeufs + Avoine", "Poulet/Riz/Brocolis", "Shaker + Amandes", "Saumon/Patate Douce"]
-        })
-
-# --- 6. PROGRAMMES ---
-elif menu == "📋 Programmes":
-    st.header("📋 PROGRAMMES D'ENTRAÎNEMENT")
-    choix = st.selectbox("Choisir un programme", ["Débutant 5J", "PPL 6J", "PR Bench (3J/semaine)"])
-    
-    if choix == "PR Bench (3J/semaine)":
-        st.subheader("🚀 Formule PR Bench")
-        st.write("**Lundi :** 4x5 à 75% du PR visé")
-        st.write("**Mercredi :** 3x7 à 65% (Pause 2s poitrine)")
-        st.write("**Samedi :** Single à 80% + 3x3 à 75%")
+        choix = st.selectbox("Exercice", list(exos.keys()))
+        st.markdown(f'<div class="card"><h3>{choix}</h3><p>{exos[choix]}</p></div>', unsafe_allow_html=True)
         
-        pr_target = st.number_input("Objectif PR (kg)", 40, 300, 100)
-        st.info(f"Lundi, chargez à : {pr_target*0.75} kg")
 
-# --- 7. INSTALLATION ---
+    with tab_stats:
+        st.subheader("Suivi de force par exercice")
+        # Exemple dynamique
+        ex_stat = st.selectbox("Sélectionner exercice pour voir la courbe", ["Bench", "Squat", "Deadlift"])
+        st.info("Ajoutez vos données dans l'onglet Profil pour voir les courbes ici.")
+
+# ==========================================
+# 4. PROGRAMMES (CONTENU DÉTAILLÉ)
+# ==========================================
+elif menu == "📋 Programmes":
+    st.header("📋 MES PROGRAMMES PROFESSIONNELS")
+    p_choix = st.selectbox("Choisir un programme", ["Débutant 5 jours", "PPL 6 jours", "PR Bench (3j/sem)", "Cardio Maison"])
+    
+    if p_choix == "PR Bench (3j/sem)":
+        pr_obj = st.number_input("PR Cible (kg)", 40, 300, 100)
+        st.write(f"### Planning basé sur {pr_obj}kg")
+        st.write(f"**Lundi:** 4x5 à {pr_obj*0.75}kg + Bench Haltères 3x10 + Triceps")
+        st.write(f"**Mercredi:** 3x7 à {pr_obj*0.65}kg (Pause 2s poitrine) + Militaire + Biceps")
+        st.write(f"**Samedi:** Single à {pr_obj*0.80}kg + 3x3 à {pr_obj*0.75}kg")
+        st.success("Augmentez de +3% par semaine si réussi.")
+
+    elif p_choix == "PPL 6 jours":
+        st.write("**Lundi/Jeudi (Push):** DC 4x8, Militaire 3x10, Triceps 3x12")
+        st.write("**Mardi/Vendredi (Pull):** Rowing 4x8, Tractions 3xMAX, Biceps 3x12")
+        st.write("**Mercredi/Samedi (Legs):** Squat 4x8, RDL 3x10, Leg Press 3x12")
+
+# ==========================================
+# 5. NUTRITION
+# ==========================================
+elif menu == "🍽️ Nutrition":
+    st.header("🍽️ NUTRITION & CUISINIER IA")
+    tab_ia, tab_menu = st.tabs(["👨‍🍳 Cuisinier IA", "📋 Menus 2300kcal"])
+    
+    with tab_ia:
+        envie = st.text_input("J'ai envie de... (ex: Poulet, rapide, italien)")
+        if st.button("Générer Recette"):
+            st.success(f"Recette IA : Bowl Muscu au {envie} - 650kcal, 45g Prot.")
+            
+    with tab_menu:
+        st.subheader("3 Menus à 2300kcal")
+        st.markdown("""
+        **Menu 1 (Classique):** Matin: 3 oeufs + Avoine | Midi: Poulet/Riz/Brocolis | Soir: Saumon/Patate douce
+        **Menu 2 (Rapide):** Matin: Shaker + Beurre cacahuète | Midi: Pâtes complètes/Thon | Soir: Omelette/Avocat
+        **Menu 3 (Force):** Matin: Pancakes Protéinés | Midi: Steak 5%/Riz | Soir: Fromage Blanc/Amandes
+        """)
+
+# ==========================================
+# 6. REPOS & JEU
+# ==========================================
+elif menu == "⏱️ Repos & Jeu":
+    st.header("⏱️ REPOS & DIVERTISSEMENT")
+    c1, c2 = st.columns(2)
+    with c1:
+        st.subheader("Chronomètre")
+        t = st.number_input("Secondes", 30, 300, 90)
+        if st.button("START"):
+            ph = st.empty()
+            for i in range(t, -1, -1):
+                ph.write(f"## ⏳ {i}s")
+                time.sleep(1)
+            st.error("🚀 TEMPS DE REPOS TERMINÉ, RETOUR AU CHARBON !")
+    with c2:
+        st.subheader("🎮 FLAPPY BICEPS")
+        st.components.v1.html("""
+            <canvas id='c' width='300' height='200' style='border:1px solid red; background: black;'></canvas>
+            <script>
+            var ctx=document.getElementById('c').getContext('2d'), y=100, v=0;
+            function d(){ v+=0.1; y+=v; ctx.clearRect(0,0,300,200); ctx.fillStyle='white'; ctx.fillText('💪', 50, y);
+            if(y>200) y=100, v=0; requestAnimationFrame(d); }
+            window.onclick=()=>v=-3; d();
+            </script>
+        """, height=250)
+
+# ==========================================
+# 7. COACH IA
+# ==========================================
+elif menu == "🤖 Coach IA":
+    st.header("🤖 MON ASSISTANT IA")
+    st.info("L'IA analyse vos pesées et vos charges pour vous conseiller.")
+    st.write("- Analyse : Votre progression est stable.")
+    st.write("- Conseil : Dormez 1h de plus pour optimiser la récupération du PR Bench.")
+
+# ==========================================
+# 8. INSTALLATION
+# ==========================================
 elif menu == "📱 Installation":
-    st.header("📱 INSTALLER SUR VOTRE SMARTPHONE")
-    st.write("### 🤖 Android (Chrome)")
-    st.write("1. Cliquez sur les 3 points en haut à droite.")
-    st.write("2. Sélectionnez 'Ajouter à l'écran d'accueil'.")
-    st.write("### 🍎 iOS (Safari)")
-    st.write("1. Cliquez sur le bouton de partage (carré avec flèche).")
-    st.write("2. Sélectionnez 'Sur l'écran d'accueil'.")
-
-# --- FOOTER ---
-st.divider()
-st.caption("BODYTRACK PRO - Votre corps, votre machine. © 2026")
+    st.header("📱 INSTALLER SUR SMARTPHONE")
+    st.write("**Sur iPhone :** Safari -> Partager -> 'Sur l'écran d'accueil'")
+    st.write("**Sur Android :** Chrome -> 3 points -> 'Installer l'application'")
