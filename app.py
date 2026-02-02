@@ -55,7 +55,7 @@ if menu == "💪 Entraînement":
     st.write("Voici tes fiches techniques professionnelles :")
     
     # REMPLACE LE LIEN CI-DESSOUS
-    lien_technique = "https://www.canva.com/design/DA.../view?embed"
+     lien_nutri = "https://www.canva.com/design/DAG_QbeW4SU/jqXSEY7jaMUEBLxttSGZRQ/view?embed"
     afficher_canva(lien_technique, hauteur=800)
 
 # ==========================================
